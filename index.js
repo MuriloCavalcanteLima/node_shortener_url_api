@@ -21,15 +21,12 @@ app.get('/', function(req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
-// Simple in-memory storage
 let urls = [];
 
-// Your first API endpoint
 app.get('/api/hello', function (req, res) {
   res.json({ greeting: 'hello API' });
 });
 
-// POST: encurta URL
 app.post('/api/shorturl', function (req, res) {
   const inputUrl = req.body.url;
 
@@ -53,7 +50,6 @@ app.post('/api/shorturl', function (req, res) {
   });
 });
 
-// GET: redireciona
 app.get('/api/shorturl/:id', function (req, res) {
   const id = parseInt(req.params.id);
   const originalUrl = urls[id - 1];
