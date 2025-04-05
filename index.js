@@ -21,30 +21,48 @@ app.get('/', function(req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
+// Simple in-memory storage
+let urls = [];
+
 // Your first API endpoint
-app.get('/api/hello', function(req, res) {
+app.get('/api/hello', function (req, res) {
   res.json({ greeting: 'hello API' });
 });
 
-
-
-app.post('/api/shorturl', function(req, res, next){
+// POST: encurta URL
+app.post('/api/shorturl', function (req, res) {
   const inputUrl = req.body.url;
-  if (!inputUrl || !/^https?:\/\//i.test(inputUrl)) return res.json({ error: 'invalid url' });
+
+  if (!inputUrl || !/^https?:\/\//i.test(inputUrl)) {
+    return res.json({ error: 'invalid url' });
+  }
+
   const hostname = url.parse(inputUrl).hostname;
 
-  dns.lookup(hostname, (err, address) => {
+  dns.lookup(hostname, (err) => {
     if (err) {
-      res.json({"error": 'invalid url'});
+      return res.json({ error: 'invalid url' });
     } else {
-      next();
+      const id = urls.length + 1;
+      urls.push(inputUrl);
+      return res.json({
+        original_url: inputUrl,
+        short_url: id
+      });
     }
   });
-}, function(req, res) {
-  res.json({
-    "original_url": req.body.url,
-    "short_url": 1
-  });
+});
+
+// GET: redireciona
+app.get('/api/shorturl/:id', function (req, res) {
+  const id = parseInt(req.params.id);
+  const originalUrl = urls[id - 1];
+
+  if (!originalUrl) {
+    return res.json({ error: 'No short URL found for the given input' });
+  }
+
+  res.redirect(originalUrl);
 });
 
 app.listen(port, function() {
